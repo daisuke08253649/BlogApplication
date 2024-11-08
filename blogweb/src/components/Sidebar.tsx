@@ -7,14 +7,14 @@ import { Link } from 'react-router-dom';
 
 const sidebarItems = [
   { text: 'ホーム', icon: <Home />, url: '/' },
-  { text: '通知', icon: <Notifications /> },
-  { text: 'メッセージ', icon: <Message /> },
-  { text: 'ブックマーク', icon: <BookmarkBorder /> },
-  { text: 'プロフィール', icon: <Person /> },
+  { text: '通知', icon: <Notifications />, url: '/notification'},
+  { text: 'メッセージ', icon: <Message />, url: '/message'},
+  { text: 'ブックマーク', icon: <BookmarkBorder />, url: '/bookmark'},
+  { text: 'プロフィール', icon: <Person />, url: '/profile'},
   { text: 'サインアップ',icon: <PersonAdd />, url: '/signup'},
-  { text: 'ログイン', icon: <LoginIcon /> },
-  { text: 'ログアウト', icon: <LogoutIcon /> },
-  { text: 'その他', icon: <MoreHoriz /> },
+  { text: 'ログイン', icon: <LoginIcon />, url: '/login'},
+  { text: 'ログアウト', icon: <LogoutIcon />, url: '/logout'},
+  { text: 'その他', icon: <MoreHoriz />, url: '/other'},
 ];
 
 const Sidebar: React.FC = () => {
