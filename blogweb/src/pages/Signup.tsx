@@ -77,8 +77,11 @@ export default function SignupScreen() {
       // サインアップ成功時にHome.tsxに遷移
       navigate('/home'); // useNavigateを使用してリダイレクト
     } catch (error) {
-      console.error('Signup error:', error);
-      setSnackbar({ open: true, message: 'サインアップに失敗しました。' });
+      if (axios.isAxiosError(error) && error.response) {
+        setSnackbar({ open: true, message: error.response.data.error || 'サインアップに失敗しました。' });
+      } else {
+        setSnackbar({ open: true, message: 'サインアップに失敗しました。' });
+      }
     }
   };
 
