@@ -12,7 +12,6 @@ import {
   Divider
 } from '@mui/material';
 import axios from 'axios';
-import Sidebar from '../components/Sidebar';
 
 
 interface Blog {
@@ -64,71 +63,55 @@ export default function Component() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <Sidebar/>
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            marginLeft: '240px', // Match sidebar width
-            overflowY: 'auto',
-            height: 'calc(100vh - 64px)', // Subtract AppBar height
-          }}
-        >
-          <Container maxWidth="lg">
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
-                  <form onSubmit={handleBlogSubmit}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      variant="outlined"
-                      placeholder="いまどうしてる？"
-                      value={newBlog}
-                      onChange={(e) => setNewBlog(e.target.value)}
-                      sx={{ mb: 1 }}
-                    />
-                    <Button type="submit" variant="contained" color="primary">
-                      投稿する
-                    </Button>
-                  </form>
-                </Paper>
-                {blogs.map((blog) => (
-                  <Paper key={blog.id} elevation={3} sx={{ p: 2, mb: 2 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Avatar sx={{ mr: 1 }}>{blog.user ? blog.user[0] : 'U'}</Avatar>
-                        <Typography variant="subtitle1" component="span" sx={{ display: 'block', textAlign: 'left' }}>
-                          {blog.user || '匿名ユーザー'}
-                        </Typography>
-                      </Box>
-                      <Divider sx={{ mb: 1 }} />
-                      <Typography variant="body1" paragraph sx={{ textAlign: 'left' }}>
-                        {blog.content}
-                      </Typography>
-                      <Box sx={{ alignSelf: 'flex-end', mt: 'auto' }}>
-                        <Typography variant="body2" color="textSecondary">
-                          {formatDate(blog.created_at)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Paper>
-                ))}
-              </Grid>
-            </Grid>
-          </Container>
-        </Box>
-      </Box>
+    <Container maxWidth="lg" sx={{ mt: 2 }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
+            <form onSubmit={handleBlogSubmit}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                variant="outlined"
+                placeholder="いまどうしてる？"
+                value={newBlog}
+                onChange={(e) => setNewBlog(e.target.value)}
+                sx={{ mb: 1 }}
+              />
+              <Button type="submit" variant="contained" color="primary">
+                投稿する
+              </Button>
+            </form>
+          </Paper>
+          {blogs.map((blog) => (
+            <Paper key={blog.id} elevation={3} sx={{ p: 2, mb: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Avatar sx={{ mr: 1 }}>{blog.user ? blog.user[0] : 'U'}</Avatar>
+                  <Typography variant="subtitle1" component="span" sx={{ display: 'block', textAlign: 'left' }}>
+                    {blog.user || '匿名ユーザー'}
+                  </Typography>
+                </Box>
+                <Divider sx={{ mb: 1 }} />
+                <Typography variant="body1" paragraph sx={{ textAlign: 'left' }}>
+                  {blog.content}
+                </Typography>
+                <Box sx={{ alignSelf: 'flex-end', mt: 'auto' }}>
+                  <Typography variant="body2" color="textSecondary">
+                    {formatDate(blog.created_at)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          ))}
+        </Grid>
+      </Grid>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
         onClose={() => setError(null)}
         message={error}
       />
-    </Box>
+    </Container>
   );
 }

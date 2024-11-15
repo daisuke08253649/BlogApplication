@@ -11,9 +11,11 @@ import {
   Grid,
   Snackbar,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { Person, Email, Lock } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 interface FormData {
   username: string;
@@ -23,6 +25,8 @@ interface FormData {
 }
 
 export default function SignupScreen() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [formData, setFormData] = useState<FormData>({
     username: '',
     email: '',
@@ -98,12 +102,38 @@ export default function SignupScreen() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Paper elevation={3} sx={{ mt: 8, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">
+    <Container
+      component="main"
+      maxWidth="xs"
+      sx={{
+        mt: { xs: 2, sm: 8 },
+        px: { xs: 2, sm: 3 },
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{ 
+          p: { xs: 2, sm: 4 },
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography
+          component="h1"
+          variant={isMobile ? "h6" : "h5"}
+          sx={{ mb: 2 }}
+        >
           サインアップ
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: '100%',
+            mt: { xs: 1, sm: 3 },
+          }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -120,6 +150,7 @@ export default function SignupScreen() {
                 InputProps={{
                   startAdornment: <Person color="action" sx={{ mr: 1 }} />,
                 }}
+                size={isMobile ? "small" : "medium"}
               />
             </Grid>
             <Grid item xs={12}>
@@ -137,6 +168,7 @@ export default function SignupScreen() {
                 InputProps={{
                   startAdornment: <Email color="action" sx={{ mr: 1 }} />,
                 }}
+                size={isMobile ? "small" : "medium"}
               />
             </Grid>
             <Grid item xs={12}>
@@ -155,6 +187,7 @@ export default function SignupScreen() {
                 InputProps={{
                   startAdornment: <Lock color="action" sx={{ mr: 1 }} />,
                 }}
+                size={isMobile ? "small" : "medium"}
               />
             </Grid>
             <Grid item xs={12}>
@@ -173,6 +206,7 @@ export default function SignupScreen() {
                 InputProps={{
                   startAdornment: <Lock color="action" sx={{ mr: 1 }} />,
                 }}
+                size={isMobile ? "small" : "medium"}
               />
             </Grid>
           </Grid>
@@ -180,14 +214,34 @@ export default function SignupScreen() {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ 
+              mt: { xs: 2, sm: 3 }, 
+              mb: { xs: 1, sm: 2 },
+              height: isMobile ? '36px' : '42px',
+            }}
             disabled={isLoading}
           >
-            {isLoading ? <CircularProgress size={24} /> : 'サインアップ'}
+            {isLoading ? (
+              <CircularProgress 
+                size={isMobile ? 20 : 24} 
+                color="inherit" 
+              />
+            ) : 'サインアップ'}
           </Button>
-          <Grid container justifyContent="flex-end">
+          <Grid 
+            container 
+            justifyContent="flex-end"
+            sx={{ mt: 1 }}
+          >
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link
+                component={RouterLink}
+                to="/login"
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? '0.875rem' : '1rem',
+                }}
+              >
                 すでにアカウントをお持ちですか？ ログイン
               </Link>
             </Grid>
@@ -199,6 +253,9 @@ export default function SignupScreen() {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         message={snackbar.message}
+        sx={{
+          bottom: { xs: 16, sm: 24 },
+        }}
       />
     </Container>
   );

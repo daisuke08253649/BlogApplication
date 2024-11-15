@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Toolbar, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Toolbar, List, ListItem, ListItemIcon, ListItemText, useTheme, useMediaQuery } from '@mui/material';
 import { Home, Notifications, Message, BookmarkBorder, Person, MoreHoriz, PersonAdd } from '@mui/icons-material';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -18,27 +18,56 @@ const sidebarItems = [
 ];
 
 const Sidebar: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const menuList = (
+    <List>
+      {sidebarItems.map((item, index) => (
+        <ListItem
+          key={index}
+          component={Link}
+          to={item.url || ''}
+          sx={{
+            color: 'inherit',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          }}
+        >
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText 
+            primary={item.text} 
+            sx={{
+              '& .MuiListItemText-primary': {
+                fontSize: isMobile ? '0.9rem' : '1rem',
+              },
+            }}
+          />
+        </ListItem>
+      ))}
+    </List>
+  );
+
   return (
-    <Paper
-      elevation={3}
+    <Box
       sx={{
         width: 240,
-        flexShrink: 0,
-        position: 'fixed',
-        height: 'calc(100vh - 64px)', // Subtract AppBar height
-        overflowY: 'auto',
+        ...(isMobile ? {
+          '& .MuiDrawer-paper': {
+            width: 240,
+            boxSizing: 'border-box',
+          },
+        } : {
+          flexShrink: 0,
+          height: '100%',
+          overflowY: 'auto',
+        }),
       }}
     >
-      <Toolbar /> {/* This empty Toolbar acts as a spacer */}
-      <List>
-        {sidebarItems.map((item, index) => (
-          <ListItem key={index} component={Link} to={item.url || ''} style={{ color: 'inherit' }}>
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+      <Toolbar /> {/* ヘッダーの下のスペーサー */}
+      {menuList}
+    </Box>
   );
 };
 
