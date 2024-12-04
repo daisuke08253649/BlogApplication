@@ -1,16 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Box, Toolbar, useMediaQuery, useTheme, Drawer } from '@mui/material';
 import Home from './pages/Home';
 import Signup from './pages/Signup';
+import Login from './pages/Login';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+
+interface User {
+  name: string;
+  avatarUrl?: string;
+}
 
 function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [user, setUser] = useState<User | undefined>(undefined);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // デフォルトアバター画像のURL
+  const defaultAvatarUrl = "https://mui.com/static/images/broken-image.jpg";
+
+  // ユーザー情報を設定する共通関数
+  const setUserData = (userData: any) => {
+    setUser({
+      name: userData.name || userData.email?.split('@')[0],
+      avatarUrl: userData.image?.url || defaultAvatarUrl
+    });
+  };
+
+  const handleLogin = async (userData: User) => {
+    setUserData(userData)
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.delete('http://localhost:3010/auth/sign_out', {
+        headers: {
+          'access-token': localStorage.getItem('access-token'),
+          client: localStorage.getItem('client'),
+          uid: localStorage.getItem('uid'),
+        },
+      });
+      // ローカルストレージからトークン情報を削除
+      localStorage.removeItem('access-token');
+      localStorage.removeItem('client');
+      localStorage.removeItem('uid');
+      // ユーザー状態をクリア
+      setUser(undefined);
+      navigate('/login'); // ログインページにリダイレクト
+      // 必要に応じてリダイレクトなどの処理を追加
+    } catch (error) {
+      console.error('ログアウトに失敗しました:', error);
+    }
+  };
+  // 初期ロード時の処理
+  useEffect(() => {
+    const accessToken = localStorage.getItem('access-token');
+    const client = localStorage.getItem('client');
+    const uid = localStorage.getItem('uid');
+
+    if (accessToken && client && uid) {
+      // ヘッダーにトークンを設定
+      axios.defaults.headers.common['access-token'] = accessToken;
+      axios.defaults.headers.common['client'] = client;
+      axios.defaults.headers.common['uid'] = uid;
+
+      // ユーザー情報を取得
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get('http://localhost:3010/auth/validate_token');
+          setUserData(response.data.data);
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          // エラー時はローカルストレージをクリア
+          localStorage.removeItem('access-token');
+          localStorage.removeItem('client');
+          localStorage.removeItem('uid');
+          setUser(undefined);
+        }
+      };
+
+      fetchUserData();
+    }
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -19,7 +95,7 @@ function App() {
   return (
     <div className="App">
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <Header onMenuClick={handleDrawerToggle} />
+        <Header onMenuClick={handleDrawerToggle} user={user} />
         <Box sx={{ display: 'flex', flex: 1 }}>
           {/* モバイル用のドロワー */}
           <Drawer
@@ -40,7 +116,7 @@ function App() {
               },
             }}
           >
-            <Sidebar />
+            <Sidebar onLogout={handleLogout} />
           </Drawer>
           
           <Box
@@ -54,6 +130,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
             </Routes>
           </Box>
         </Box>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Toolbar, List, ListItem, ListItemIcon, ListItemText, useTheme, useMediaQuery } from '@mui/material';
-import { Home, Notifications, Message, BookmarkBorder, Person, MoreHoriz, PersonAdd } from '@mui/icons-material';
+import { Home, Notifications, Message, BookmarkBorder, Person, PersonAdd } from '@mui/icons-material';
 import LoginIcon from '@mui/icons-material/Login';
-import LogoutIcon from '@mui/icons-material/Logout';
+import LogoutButton from './LogoutButton';
 import { Link } from 'react-router-dom';
 
 const sidebarItems = [
@@ -12,12 +12,14 @@ const sidebarItems = [
   { text: 'ブックマーク', icon: <BookmarkBorder />, url: '/bookmark'},
   { text: 'プロフィール', icon: <Person />, url: '/profile'},
   { text: 'サインアップ',icon: <PersonAdd />, url: '/signup'},
-  { text: 'ログイン', icon: <LoginIcon />, url: '/login'},
-  { text: 'ログアウト', icon: <LogoutIcon />, url: '/logout'},
-  { text: 'その他', icon: <MoreHoriz />, url: '/other'},
+  { text: 'ログイン', icon: <LoginIcon />, url: '/login'}
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onLogout: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -46,6 +48,9 @@ const Sidebar: React.FC = () => {
           />
         </ListItem>
       ))}
+      <ListItem>
+        <LogoutButton onLogout={onLogout} />
+      </ListItem>
     </List>
   );
 
@@ -53,6 +58,7 @@ const Sidebar: React.FC = () => {
     <Box
       sx={{
         width: 240,
+        position: 'fixed',
         ...(isMobile ? {
           '& .MuiDrawer-paper': {
             width: 240,

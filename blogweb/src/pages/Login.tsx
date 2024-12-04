@@ -14,24 +14,24 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { Person, Email, Lock } from '@mui/icons-material';
+import { Email, Lock } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 interface FormData {
   email: string;
   password: string;
-  password_confirmation: string;
-  name: string;
 }
 
-export default function SignupScreen() {
+interface LoginProps {
+  onLogin: (userData: { name: string; avatarUrl?: string }) => void;
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    password_confirmation: '',
-    name: '',
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
@@ -46,35 +46,57 @@ export default function SignupScreen() {
 
   const validateForm = () => {
     const newErrors: Partial<FormData> = {};
-    if (!formData.name.trim()) newErrors.name = 'ユーザー名は必須です';
     if (!formData.email.trim()) newErrors.email = 'メールアドレスは必須です';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = '有効なメールアドレスを入力してください';
     if (!formData.password) newErrors.password = 'パスワードは必須です';
     else if (formData.password.length < 8) newErrors.password = 'パスワードは8文字以上である必要があります';
-    if (formData.password !== formData.password_confirmation) newErrors.password_confirmation = 'パスワードが一致しません';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const signup = async (formData: FormData) => {
+  const Login = async (formData: FormData) => {
     try {
-      const response = await axios.post('http://localhost:3010/auth', {
+      const response = await axios.post('http://localhost:3010/auth/sign_in', {
         email: formData.email,
         password: formData.password,
-        password_confirmation: formData.password_confirmation,
-        name: formData.name,
       });
 
-      console.log('Signup successful:', response.data);
-      setSnackbar({ open: true, message: 'アカウントが作成されました！' });
+      console.log('Full response:', response);
+      console.log('Response data:', response.data);
+      console.log('Response headers:', response.headers);
 
+      // レスポンスヘッダーからトークン情報を取得
+      const accessToken = response.headers['access-token'];
+      const client = response.headers['client'];
+      const uid = response.headers['uid'];
+
+      // トークン情報を localStorage に保存
+      localStorage.setItem('access-token', accessToken);
+      localStorage.setItem('client', client);
+      localStorage.setItem('uid', uid);
+
+      // axiosのヘッダーにトークンを設定
+      axios.defaults.headers.common['access-token'] = accessToken;
+      axios.defaults.headers.common['client'] = client;
+      axios.defaults.headers.common['uid'] = uid;
+
+      // ログインレスポンスから直接ユーザー情報を取得
+      const userData = {
+        name: response.data.data.name || response.data.data.email.split('@')[0], // nameがない場合はメールアドレスの@前の部分を使用
+        avatarUrl: response.data.data.image?.url
+      };
+
+      console.log('User data:', userData);
+
+      onLogin(userData);
+      setSnackbar({ open: true, message: 'ログインしました！' });
       // サインアップ成功時にHome.tsxに遷移
-      navigate('/login'); // useNavigateを使用してリダイレクト
+      navigate('/'); // useNavigateを使用してリダイレクト
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        setSnackbar({ open: true, message: error.response.data.error || 'サインアップに失敗しました。' });
+        setSnackbar({ open: true, message: error.response.data.error || 'ログインに失敗しました。' });
       } else {
-        setSnackbar({ open: true, message: 'サインアップに失敗しました。' });
+        setSnackbar({ open: true, message: 'ログインに失敗しました。' });
       }
     }
   };
@@ -84,7 +106,7 @@ export default function SignupScreen() {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        await signup(formData);
+        await Login(formData);
       } finally {
         setIsLoading(false);
       }
@@ -114,7 +136,7 @@ export default function SignupScreen() {
           variant={isMobile ? "h6" : "h5"}
           sx={{ mb: 2 }}
         >
-          サインアップ
+          ログイン
         </Typography>
         <Box
           component="form"
@@ -125,24 +147,6 @@ export default function SignupScreen() {
           }}
         >
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="name"
-                label="ユーザー名"
-                name="name"
-                autoComplete="name"
-                value={formData.name}
-                onChange={handleChange}
-                error={!!errors.name}
-                helperText={errors.name}
-                InputProps={{
-                  startAdornment: <Person color="action" sx={{ mr: 1 }} />,
-                }}
-                size={isMobile ? "small" : "medium"}
-              />
-            </Grid>
             <Grid item xs={12}>
               <TextField
                 required
@@ -180,25 +184,6 @@ export default function SignupScreen() {
                 size={isMobile ? "small" : "medium"}
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="password_confirmation"
-                label="パスワード確認"
-                type="password"
-                id="password_confirmation"
-                autoComplete="new-password"
-                value={formData.password_confirmation}
-                onChange={handleChange}
-                error={!!errors.password_confirmation}
-                helperText={errors.password_confirmation}
-                InputProps={{
-                  startAdornment: <Lock color="action" sx={{ mr: 1 }} />,
-                }}
-                size={isMobile ? "small" : "medium"}
-              />
-            </Grid>
           </Grid>
           <Button
             type="submit"
@@ -216,19 +201,19 @@ export default function SignupScreen() {
                 size={isMobile ? 20 : 24} 
                 color="inherit" 
               />
-            ) : 'サインアップ'}
+            ) : 'ログイン'}
           </Button>
           <Grid container justifyContent="flex-end" sx={{ mt: 1 }}>
             <Grid item>
               <Link
                 component={RouterLink}
-                to="/login"
+                to="/signup"
                 variant="body2"
                 sx={{
                   fontSize: isMobile ? '0.875rem' : '1rem',
                 }}
               >
-                すでにアカウントをお持ちですか？ ログイン
+                アカウントをお持ちでないですか？ サインアップ
               </Link>
             </Grid>
           </Grid>
