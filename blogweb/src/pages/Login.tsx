@@ -92,6 +92,7 @@ export default function Login({ onLogin }: LoginProps) {
       setSnackbar({ open: true, message: 'ログインしました！' });
       // サインアップ成功時にHome.tsxに遷移
       navigate('/'); // useNavigateを使用してリダイレクト
+      
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setSnackbar({ open: true, message: error.response.data.error || 'ログインに失敗しました。' });
