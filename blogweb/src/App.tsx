@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { authAPI } from './api/auth';
 import './App.css';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Box, Toolbar, useMediaQuery, useTheme, Drawer } from '@mui/material';
@@ -38,21 +39,10 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await axios.delete('http://localhost:3010/auth/sign_out', {
-        headers: {
-          'access-token': localStorage.getItem('access-token'),
-          client: localStorage.getItem('client'),
-          uid: localStorage.getItem('uid'),
-        },
-      });
-      // ローカルストレージからトークン情報を削除
-      localStorage.removeItem('access-token');
-      localStorage.removeItem('client');
-      localStorage.removeItem('uid');
+      await authAPI.logout();
       // ユーザー状態をクリア
       setUser(undefined);
       navigate('/login'); // ログインページにリダイレクト
-      // 必要に応じてリダイレクトなどの処理を追加
     } catch (error) {
       console.error('ログアウトに失敗しました:', error);
     }
@@ -72,7 +62,7 @@ function App() {
       // ユーザー情報を取得
       const fetchUserData = async () => {
         try {
-          const response = await axios.get('http://localhost:3010/auth/validate_token');
+          const response = await authAPI.validateToken();
           setUserData(response.data.data);
         } catch (error) {
           console.error('Failed to fetch user data:', error);

@@ -11,7 +11,7 @@ import {
   Box,
   Divider
 } from '@mui/material';
-import axios from 'axios';
+import { blogsAPI } from '../api/blogs';
 
 
 interface Blog {
@@ -21,7 +21,7 @@ interface Blog {
   created_at: string;
 }
 
-export default function Component() {
+export default function Home() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [newBlog, setNewBlog] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function Component() {
 
   const fetchTweets = async () => {
     try {
-      const response = await axios.get('http://localhost:3010/api/blogs');
+      const response = await blogsAPI.getBlogs();
       setBlogs(response.data);
     } catch (err) {
       setError('ツイートの取得に失敗しました。');
@@ -43,11 +43,9 @@ export default function Component() {
     e.preventDefault();
     if (newBlog.trim()) {
       try {
-        const response = await axios.post('http://localhost:3010/api/blogs', {
-          blog: {
-            content: newBlog,
-            user: '現在のユーザー'
-          }
+        const response = await blogsAPI.createBlog({
+          content: newBlog,
+          user: '現在のユーザー'
         });
         setBlogs([response.data, ...blogs]);
         setNewBlog('');
