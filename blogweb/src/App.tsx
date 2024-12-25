@@ -11,6 +11,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
 interface User {
+  id: number;
   name: string;
   avatarUrl?: string;
 }
@@ -28,12 +29,13 @@ function App() {
   // ユーザー情報を設定する共通関数
   const setUserData = (userData: any) => {
     setUser({
+      id: userData.id,
       name: userData.name || userData.email?.split('@')[0],
       avatarUrl: userData.image?.url || defaultAvatarUrl
     });
   };
 
-  const handleLogin = async (userData: User) => {
+  const handleLogin = async (userData: { name: string; avatarUrl?: string; }) => {
     setUserData(userData)
   };
 
@@ -118,7 +120,7 @@ function App() {
           >
             <Toolbar /> {/* ヘッダーの下のスペーサー */}
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Home user={user} />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login onLogin={handleLogin} />} />
             </Routes>

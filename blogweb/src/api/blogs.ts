@@ -1,8 +1,11 @@
 import client from './lib/client';
 
-interface BlogData {
+export interface BlogData {
   content: string;
-  user: string;
+  user?: {
+    id: number,
+    name: string
+  };
 }
 
 export const blogsAPI = {

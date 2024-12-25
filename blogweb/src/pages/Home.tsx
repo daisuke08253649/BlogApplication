@@ -12,29 +12,47 @@ import {
   Divider
 } from '@mui/material';
 import { blogsAPI } from '../api/blogs';
-
+import { useNavigate } from 'react-router-dom';
 
 interface Blog {
   id: number;
-  user: string;
+  user?: {
+    id: number,
+    name: string,
+  } | null;
   content: string;
   created_at: string;
 }
 
-export default function Home() {
+interface Props {
+  user?: {
+    id: number,
+    name: string
+  };
+}
+
+export default function Home({ user }: Props) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [newBlog, setNewBlog] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const accessToken = localStorage.getItem('access-token');
+    if (!accessToken) {
+      navigate('/login');
+      return;
+    }
     fetchTweets();
-  }, []);
+  }, [navigate]);
 
   const fetchTweets = async () => {
     try {
       const response = await blogsAPI.getBlogs();
+      console.log('Fetched blogs:', response.data);
       setBlogs(response.data);
     } catch (err) {
+      console.error('Error:', err);
       setError('ツイートの取得に失敗しました。');
     }
   };
@@ -44,12 +62,28 @@ export default function Home() {
     if (newBlog.trim()) {
       try {
         const response = await blogsAPI.createBlog({
-          content: newBlog,
-          user: '現在のユーザー'
+          content: newBlog
         });
-        setBlogs([response.data, ...blogs]);
+
+        console.log('API Response:', response);
+
+        // 新しい投稿を作成
+        const newBlogPost: Blog = {
+          id: Date.now(), // 一時的なID
+          content: newBlog,
+          created_at: new Date().toISOString(),
+          user: user || null
+        };
+  
+        // 投稿リストを更新
+        setBlogs(prevBlogs => [newBlogPost, ...prevBlogs]);
         setNewBlog('');
+        
+        // 最新の投稿を取得
+        fetchTweets();
+
       } catch (err) {
+        console.error('Post error:', err);
         setError('ツイートの投稿に失敗しました。');
       }
     }
@@ -57,7 +91,13 @@ export default function Home() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes()}`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
   };
 
   return (
@@ -81,13 +121,15 @@ export default function Home() {
               </Button>
             </form>
           </Paper>
-          {blogs.map((blog) => (
-            <Paper key={blog.id} elevation={3} sx={{ p: 2, mb: 2 }}>
+          {blogs && blogs.map((blog, index) => (
+            <Paper key={`blog-${blog.id}-${index}`} elevation={3} sx={{ p: 2, mb: 2 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Avatar sx={{ mr: 1 }}>{blog.user ? blog.user[0] : 'U'}</Avatar>
+                  <Avatar sx={{ mr: 1 }}>
+                    {blog.user?.name?.[0] || 'U'}
+                  </Avatar>
                   <Typography variant="subtitle1" component="span" sx={{ display: 'block', textAlign: 'left' }}>
-                    {blog.user || '匿名ユーザー'}
+                    {blog.user?.name || '匿名ユーザー'}
                   </Typography>
                 </Box>
                 <Divider sx={{ mb: 1 }} />

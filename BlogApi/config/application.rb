@@ -33,7 +33,11 @@ module BlogApi
     config.session_store :cookie_store, key: '_BlogApi_session'
 
     # ミドルウェアにセッション管理を追加
+    config.middleware.use ActionDispatch::Flash
+    config.middleware.use Rack::MethodOverride
     config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore
+
     config.middleware.use config.session_store, config.session_options
   end
 end
